@@ -4,7 +4,7 @@ backup
 
 ### PhpStorm ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
-
+.DS_Store
 *.iml
 
 ## Directory-based project format:
