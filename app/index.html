@@ -4,20 +4,43 @@
     <meta charset="UTF-8">
     <title>Hello World!</title>
     <link rel="stylesheet" href="./vendors/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="./vendors/bootstrap-slider/bootstrap-slider.css">
     <link rel="stylesheet" href="./style.css">
 
 <!-- Insert this line above script imports  -->
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
     <script src='./jquery.min.js'></script>
+    <script src="./vendors/bootstrap/js/bootstrap.js"></script>
+    <script src="./vendors/bootstrap-slider/bootstrap-slider.js"></script>
     <script>if (window.module) module = window.module;</script>
 </head>
 <body>
 
-    <div id='location'>
+    <!-- Modal -->
+<div class="modal fade" id="optionModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
         <input type="input" class="form-control" id="location-input" placeholder="URL or hit enter to dismiss">
-    </div>
 
-    <webview id="webview" src="https://google.com/" style="display:inline-flex; width:100%; height:100%;"></webview>
+        <div class="checkbox">
+            <label><input type="checkbox" id='option-alwaysOnTop'>Always On Top</label>
+        </div>
+
+<!--         <div class="checkbox">
+            <label><input type="text" id='option-opacity-slider'>Opacity</label>
+        </div> -->
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <!-- <button type="button" class="btn btn-primary">OK</button> -->
+      </div>
+    </div>
+  </div>
+</div>
+
+    <webview id="webview" src="https://google.com/"></webview>
 </body>
 
 <script>
@@ -25,6 +48,7 @@
     require('./renderer.js')
     var Mousetrap = require('mousetrap');
     var Webview = $("#webview");
+    var currentWindow = require('electron').remote.getCurrentWindow();
 
     function parseYoutubeVideoId(url){
         var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
@@ -35,30 +59,42 @@
     function convertUrl(url) {
         if (url.indexOf("https://www.youtube.com/watch?") === 0) {
             return "https://www.youtube.com/embed/" + parseYoutubeVideoId(url);
-        } else if (url.indexOf("http://") !== 0 || url.indexOf("https://") !== 0) {
+        } else if (url.indexOf("http://") !== 0 &&url.indexOf("https://") !== 0) {
             return "https://" + url;
         }
 
         return url;
     }
 
+    $("#option-alwaysOnTop").on('click', function() {
+        currentWindow.setAlwaysOnTop(this.checked);
+    });
+
     $(function() {
-        var location = $("#location");
+
+        // var slider = $("#option-opacity-slider")
+        //                     .slider()
+        //                     .on('slide', function() {
+        //                         $("html, body").css('opacity', slider.getValue() * 0.1)
+        //                     }).data('slider');
+
         var locationInput = $("#location-input");
+        var optionModal = $("#optionModal");
+
         locationInput.keyup(function(e) {
           if (e.keyCode === 13) {
             Webview.attr("src", convertUrl(locationInput.val()));
-            location.toggle();
+            optionModal.modal('hide');
+            locationInput.val('');
           }
         });
-
-        locationInput.on('blur', function() {
-            location.hide('slow');
+        
+        optionModal.on('shown.bs.modal', function (e) {
+            locationInput.focus();
         });
 
         Mousetrap.bind("command+l", function() {
-            location.slideToggle();
-            locationInput.focus();
+            optionModal.modal('show');
             return false;
         });
     });

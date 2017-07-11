@@ -13,7 +13,11 @@ require('electron-debug')({
 
 let mainWindow = [];
 let mainWindowIndex = 0;
-let menuInited = false
+let menuInited = false;
+
+
+// app.commandLine.appendSwitch('enable-transparent-visuals'); // try add this line
+// app.commandLine.appendSwitch('disable-gpu'); // try add this line
 
 function createWindow () {
   mainWindowIndex++;
@@ -21,7 +25,9 @@ function createWindow () {
   mainWindow[mainWindowIndex] = new BrowserWindow({
     width: 980, 
     height: 600,
-    frame: false
+    frame: false,
+    vibrancy: 'light',
+    // transparent: true
   })
 
   // and load the index.html of the app.
