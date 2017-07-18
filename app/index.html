@@ -2,53 +2,54 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Hello World!</title>
+    <title>Youtube Browser</title>
     <link rel="stylesheet" href="./vendors/bootstrap/css/bootstrap.css">
-    <link rel="stylesheet" href="./vendors/bootstrap-slider/bootstrap-slider.css">
     <link rel="stylesheet" href="./style.css">
-
-<!-- Insert this line above script imports  -->
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
     <script src='./jquery.min.js'></script>
     <script src="./vendors/bootstrap/js/bootstrap.js"></script>
-    <script src="./vendors/bootstrap-slider/bootstrap-slider.js"></script>
     <script>if (window.module) module = window.module;</script>
 </head>
 <body>
-
-    <!-- Modal -->
-<div class="modal fade" id="optionModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-body">
-        <input type="input" class="form-control" id="location-input" placeholder="URL or hit enter to dismiss">
-
-        <div class="checkbox">
-            <label><input type="checkbox" id='option-alwaysOnTop'>Always On Top</label>
+    <div class="modal fade" id="optionModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-body">
+            <input type="input" class="form-control" id="location-input" placeholder="URL or hit enter to dismiss">
+            <div class="checkbox">
+                <label><input type="checkbox" id='option-alwaysOnTop'>Always On Top</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" id='option-youtube-view-mode' checked>Youtube View Mode</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
         </div>
-
-<!--         <div class="checkbox">
-            <label><input type="text" id='option-opacity-slider'>Opacity</label>
-        </div> -->
-
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <!-- <button type="button" class="btn btn-primary">OK</button> -->
       </div>
     </div>
-  </div>
-</div>
-
-    <webview id="webview" src="https://google.com/"></webview>
+    <webview id="webview" src="https://youtube.com/" allowtransparency></webview>
 </body>
 
 <script>
+
     // You can also require other files to run in this process
     require('./renderer.js')
+
     var Mousetrap = require('mousetrap');
     var Webview = $("#webview");
     var currentWindow = require('electron').remote.getCurrentWindow();
+    var ipc = require('electron').ipcRenderer;
+    var view = document.getElementById('webview');
+    var inYoutubeViewMode = true;
+
+    view.addEventListener('did-navigate-in-page', function(e) {
+        if (isYoutubeUrl(e.url) && inYoutubeViewMode) {
+            ipc.send('openNewYoutube', convertUrl(e.url));
+            view.goBack();
+        }
+    });
 
     function parseYoutubeVideoId(url){
         var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
@@ -56,9 +57,13 @@
         return (match&&match[7].length==11)? match[7] : false;
     }
 
+    function isYoutubeUrl (url) {
+        return url.indexOf('https://www.youtube.com/watch?') === 0;
+    }
+
     function convertUrl(url) {
         if (url.indexOf("https://www.youtube.com/watch?") === 0) {
-            return "https://www.youtube.com/embed/" + parseYoutubeVideoId(url);
+            return "https://www.youtube.com/embed/" + parseYoutubeVideoId(url) + "?autoplay=1";
         } else if (url.indexOf("http://") !== 0 &&url.indexOf("https://") !== 0) {
             return "https://" + url;
         }
@@ -70,14 +75,11 @@
         currentWindow.setAlwaysOnTop(this.checked);
     });
 
+    $("#option-youtube-view-mode").on('click', function() {
+        inYoutubeViewMode = this.checked;
+    });
+
     $(function() {
-
-        // var slider = $("#option-opacity-slider")
-        //                     .slider()
-        //                     .on('slide', function() {
-        //                         $("html, body").css('opacity', slider.getValue() * 0.1)
-        //                     }).data('slider');
-
         var locationInput = $("#location-input");
         var optionModal = $("#optionModal");
 
@@ -96,6 +98,14 @@
         Mousetrap.bind("command+l", function() {
             optionModal.modal('show');
             return false;
+        });
+
+        Mousetrap.bind('command+[', function() {
+            view.goBack();
+        });
+
+        Mousetrap.bind('command+]', function() {
+            view.goForward();
         });
     });
 </script>
