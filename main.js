@@ -5,6 +5,9 @@ var Menu = electron.Menu;
 var path = require('path');
 var url = require('url');
 var ipc = electron.ipcMain;
+require('electron-debug')({
+  showDevTools: false
+});
 
 let mainWindow = [];
 let mainWindowIndex = 0;
@@ -76,6 +79,16 @@ function createWindow (initUrl, frame) {
       protocol: 'file:',
       slashes: true
     })
+  } else {
+    mainWindow[mainWindowIndex].custom = {
+      url: initUrl
+    };
+
+    initUrl = url.format({
+      pathname: path.join(__dirname, 'app/youtube.html'),
+      protocol: 'file:',
+      slashes: true
+    });
   } 
 
   // and load the index.html of the app.

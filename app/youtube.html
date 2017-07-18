@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Youtube Browser</title>
+    <link rel="stylesheet" href="./style.css">
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script src='./jquery.min.js'></script>
+    <script>if (window.module) module = window.module;</script>
+    <style>
+    #draggable {
+        background: #000000;
+        opacity: 0.5;
+        width: 100%;
+        height: 50px;
+        -webkit-app-region: drag;
+        position: absolute;
+        top: 0;
+        display: none;
+        text-align: center;
+    }
+    </style>
+</head>
+<body>
+    <div id="draggable"></div>
+    <webview id="webview" src="" allowtransparency></webview>
+</body>
+
+<script>
+
+    // You can also require other files to run in this process
+    require('./renderer.js')
+
+    var view = $("#webview");
+    var electron = require('electron');
+    var currentWindow = electron.remote.getCurrentWindow();
+    view.attr("src", currentWindow.custom.url);
+
+    var draggable = $("#draggable");
+
+    $("body").hover(function() {
+        draggable.show();
+    }, function() {
+        draggable.hide();
+    });
+
+</script>
+</html>
